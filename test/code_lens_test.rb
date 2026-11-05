@@ -32,8 +32,17 @@ class CodeLensTest < Minitest::Test
     )
   end
 
-  def test_no_lens_without_template
-    assert_empty(lenses("inline_component.rb"))
+  def test_jumps_to_the_missing_sibling_template_when_the_component_needs_one
+    assert_equal(
+      [[uri("missing_component.html.erb")]],
+      lenses("missing_component.rb").map { |lens| lens.command.arguments.first },
+    )
+  end
+
+  def test_no_lens_when_the_component_does_not_need_a_template
+    files = ["inline_component.rb", "inherited_component.rb", "abstract_component.rb", "missing.rb"]
+
+    assert_empty(files.flat_map { |file| lenses(file) })
   end
 
   private
@@ -41,6 +50,12 @@ class CodeLensTest < Minitest::Test
   def lenses(file)
     path = File.join(COMPONENTS, file)
     with_server(File.read(path), URI::Generic.from_path(path: path)) do |server, uri|
+      index = server.global_state.index
+      index.index_single(URI("file:///view_component.rb"), "module ViewComponent; class Base; end; end")
+      (Dir.glob("**/*.rb", base: COMPONENTS) - [file]).each do |fixture|
+        fixture_path = File.join(COMPONENTS, fixture)
+        index.index_single(URI::Generic.from_path(path: fixture_path), File.read(fixture_path))
+      end
       server.process_message(id: 1, method: "textDocument/codeLens", params: { textDocument: { uri: uri } })
       pop_result(server).response.select { |lens| lens.command.title == "Jump to template" }
     end

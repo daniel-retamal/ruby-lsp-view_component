@@ -11,7 +11,9 @@ module RubyLsp
     class Addon < ::RubyLsp::Addon
       # @override
       #: (GlobalState, Thread::Queue) -> void
-      def activate(global_state, outgoing_queue); end
+      def activate(global_state, outgoing_queue)
+        @index = global_state.index #: RubyIndexer::Index?
+      end
 
       # @override
       #: -> void
@@ -32,7 +34,8 @@ module RubyLsp
       # @override
       #: (ResponseBuilders::CollectionResponseBuilder[Interface::CodeLens], URI::Generic, Prism::Dispatcher) -> void
       def create_code_lens_listener(response_builder, uri, dispatcher)
-        CodeLens.new(response_builder, uri, dispatcher)
+        index = @index #: as !nil
+        CodeLens.new(response_builder, uri, dispatcher, index)
       end
     end
   end

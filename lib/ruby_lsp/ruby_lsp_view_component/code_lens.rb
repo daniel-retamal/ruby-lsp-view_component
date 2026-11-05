@@ -6,37 +6,78 @@ module RubyLsp
       include Requests::Support::Common
 
       TEMPLATE_EXTENSIONS = "{erb,haml,slim}"
+      NO_TEMPLATE_CALLS = [:abstract!, :erb_template, :haml_template, :slim_template].freeze
 
-      #: (ResponseBuilders::CollectionResponseBuilder[Interface::CodeLens], URI::Generic, Prism::Dispatcher) -> void
-      def initialize(response_builder, uri, dispatcher)
+      #: (ResponseBuilders::CollectionResponseBuilder[Interface::CodeLens], URI::Generic, Prism::Dispatcher, RubyIndexer::Index) -> void
+      def initialize(response_builder, uri, dispatcher, index)
         @response_builder = response_builder
+        @index = index
         @path = uri.to_standardized_path #: String?
-        @seen_class = false
-        dispatcher.register(self, :on_class_node_enter) if @path&.end_with?(".rb")
+        @nesting = [] #: Array[String]
+        @class_node = nil #: Prism::ClassNode?
+        return unless @path&.end_with?(".rb")
+
+        dispatcher.register(self, :on_module_node_enter, :on_module_node_leave, :on_class_node_enter, :on_class_node_leave)
+      end
+
+      #: (Prism::ModuleNode) -> void
+      def on_module_node_enter(node)
+        @nesting << node.constant_path.slice
+      end
+
+      #: (Prism::ModuleNode) -> void
+      def on_module_node_leave(node)
+        @nesting.pop
       end
 
       #: (Prism::ClassNode) -> void
       def on_class_node_enter(node)
-        return if @seen_class
+        @class_node ||= node
+      end
 
-        @seen_class = true
-        uris = templates.map { |path| URI::Generic.from_path(path: path).to_s }
-        return if uris.empty?
+      #: (Prism::ClassNode) -> void
+      def on_class_node_leave(node)
+        return unless node.equal?(@class_node)
+
+        path = @path #: as !nil
+        paths = templates(path)
+        paths = ["#{path.delete_suffix(".rb")}.html.erb"] if paths.empty? && needs_template?(node)
+        return if paths.empty?
 
         @response_builder << create_code_lens(
           node,
           title: "Jump to template",
           command_name: "rubyLsp.openFile",
-          arguments: [uris],
+          arguments: [paths.map { |path| URI::Generic.from_path(path: path).to_s }],
           data: { type: "file" },
         )
       end
 
       private
 
-      #: -> Array[String]
-      def templates
-        path = @path #: as !nil
+      #: (Prism::ClassNode) -> bool
+      def needs_template?(node)
+        name = [*@nesting, node.constant_path.slice].join("::").delete_prefix("::")
+        ancestors = @index.linearized_ancestors_of(name)
+        base = ancestors.index("ViewComponent::Base")
+        return false unless base
+        return false if @index.resolve_method("call", name)
+        return false if (ancestors.take(base) - [name]).any? { |ancestor| inherited_template?(ancestor) }
+
+        Array(node.body&.child_nodes).none? do |child|
+          child.is_a?(Prism::CallNode) && child.receiver.nil? && NO_TEMPLATE_CALLS.include?(child.name)
+        end
+      rescue RubyIndexer::Index::NonExistingNamespaceError
+        false
+      end
+
+      #: (String) -> bool
+      def inherited_template?(ancestor)
+        @index[ancestor]&.any? { |entry| entry.file_path && templates(entry.file_path).any? } || false
+      end
+
+      #: (String) -> Array[String]
+      def templates(path)
         dir = File.dirname(path)
         name = File.basename(path, ".rb")
         Dir.glob(["#{name}.*#{TEMPLATE_EXTENSIONS}", "#{name}/*.#{TEMPLATE_EXTENSIONS}"], base: dir)

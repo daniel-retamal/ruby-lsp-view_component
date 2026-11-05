@@ -1,0 +1,2 @@
+class InheritedComponent < SiblingComponent
+end

@@ -1,6 +1,6 @@
 # ruby-lsp-view_component
 
-A [Ruby LSP](https://github.com/Shopify/ruby-lsp) add-on for [ViewComponent](https://viewcomponent.org). It adds a `Jump to template` CodeLens to each component class that opens the component's template.
+A [Ruby LSP](https://github.com/Shopify/ruby-lsp) add-on for [ViewComponent](https://viewcomponent.org). It adds a `Jump to template` CodeLens to each component class that opens the component's template, or lets you create it when it is missing.
 
 ## Features
 
@@ -25,7 +25,20 @@ For `app/components/foo_component.rb` with all of these templates, the lens list
 
 ERB, Haml and Slim templates are supported. Templates of nested components in the subdirectory, such as `foo_component/item_component.html.erb` next to `foo_component/item_component.rb`, belong to that component and are left out.
 
-Components without a template file of their own get no lens. That covers [inline](https://viewcomponent.org/guide/templates.html#inline) and [`call`](https://viewcomponent.org/guide/templates.html#call) components, and components that [inherit](https://viewcomponent.org/guide/templates.html#inherited) their template from a parent class.
+### Missing template
+
+When a component needs a template and has none, the lens opens `foo_component.html.erb` next to the class. VS Code reports that the file does not exist and offers a **Create File** button. Once the file exists, the same lens opens it.
+
+![Create a missing template](.github/assets/create_template.gif)
+
+A component counts as needing a template only when it renders through a template file. There is no lens for components that:
+
+- define [`call`](https://viewcomponent.org/guide/templates.html#call), themselves or in a parent class
+- declare an [inline template](https://viewcomponent.org/guide/templates.html#inline) with `erb_template`, `haml_template` or `slim_template`
+- [inherit](https://viewcomponent.org/guide/templates.html#inherited) a template from a parent class
+- are marked `abstract!`
+
+A base class that is never rendered on its own still gets the lens. Mark it `abstract!` to hide it.
 
 ## Installation
 
