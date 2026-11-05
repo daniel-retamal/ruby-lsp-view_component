@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ruby-lsp-view_component (0.2.1)
+    ruby-lsp-view_component (0.3.0)
 
 GEM
   remote: https://rubygems.org/
@@ -94,7 +94,7 @@ CHECKSUMS
   rubocop-rake (0.7.1) sha256=3797f2b6810c3e9df7376c26d5f44f3475eda59eb1adc38e6f62ecf027cbae4d
   rubocop-shopify (3.1.0) sha256=0345309997d5d9b544c13b967ca64e51437bd573bdc79a30f1e0e72956d85c29
   ruby-lsp (0.26.11) sha256=4cc8f1587237ff8c9031680b5491df901a82559eeaa1ae96863ffe700b32583d
-  ruby-lsp-view_component (0.2.1)
+  ruby-lsp-view_component (0.3.0)
   ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
   tsort (0.2.0) sha256=9650a793f6859a43b6641671278f79cfead60ac714148aabe4e3f0060480089f
   unicode-display_width (3.3.0) sha256=4b7aa66a4b11db50f6f7e98411215cd0dd10eaecb665d36eec5bcacb3fa0b613

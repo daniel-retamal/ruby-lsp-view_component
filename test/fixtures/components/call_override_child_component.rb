@@ -1,0 +1,2 @@
+class CallOverrideChildComponent < CallOverrideComponent
+end

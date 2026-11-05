@@ -41,7 +41,7 @@ module RubyLsp
 
         path = @path #: as !nil
         paths = templates(path)
-        paths = ["#{path.delete_suffix(".rb")}.html.erb"] if paths.empty? && needs_template?(node)
+        paths = fallback_templates(node, path) if paths.empty?
         return if paths.empty?
 
         @response_builder << create_code_lens(
@@ -55,25 +55,35 @@ module RubyLsp
 
       private
 
-      #: (Prism::ClassNode) -> bool
-      def needs_template?(node)
+      #: (Prism::ClassNode, String) -> Array[String]
+      def fallback_templates(node, path)
+        return [] if declares_no_template?(node)
+
         name = [*@nesting, node.constant_path.slice].join("::").delete_prefix("::")
         ancestors = @index.linearized_ancestors_of(name)
         base = ancestors.index("ViewComponent::Base")
-        return false unless base
-        return false if @index.resolve_method("call", name)
-        return false if (ancestors.take(base) - [name]).any? { |ancestor| inherited_template?(ancestor) }
+        return [] unless base
 
-        Array(node.body&.child_nodes).none? do |child|
-          child.is_a?(Prism::CallNode) && child.receiver.nil? && NO_TEMPLATE_CALLS.include?(child.name)
+        call_owner = @index.resolve_method("call", name)&.first&.owner&.name
+        ancestors.take(base).each do |ancestor|
+          return [] if ancestor == call_owner
+
+          files = (@index[ancestor] || []).filter_map(&:file_path).uniq
+          inherited = files.flat_map { |file| templates(file) }
+          return inherited if inherited.any?
         end
+        return [] if call_owner
+
+        ["#{path.delete_suffix(".rb")}.html.erb"]
       rescue RubyIndexer::Index::NonExistingNamespaceError
-        false
+        []
       end
 
-      #: (String) -> bool
-      def inherited_template?(ancestor)
-        @index[ancestor]&.any? { |entry| entry.file_path && templates(entry.file_path).any? } || false
+      #: (Prism::ClassNode) -> bool
+      def declares_no_template?(node)
+        Array(node.body&.child_nodes).any? do |child|
+          child.is_a?(Prism::CallNode) && child.receiver.nil? && NO_TEMPLATE_CALLS.include?(child.name)
+        end
       end
 
       #: (String) -> Array[String]

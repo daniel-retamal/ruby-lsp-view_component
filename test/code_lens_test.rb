@@ -39,8 +39,21 @@ class CodeLensTest < Minitest::Test
     )
   end
 
+  def test_jumps_to_the_nearest_inherited_templates
+    assert_equal(
+      [[uri("sibling_component.html.erb"), uri("sibling_component.html+phone.erb")]],
+      lenses("inherited_component.rb").map { |lens| lens.command.arguments.first },
+    )
+  end
+
   def test_no_lens_when_the_component_does_not_need_a_template
-    files = ["inline_component.rb", "inherited_component.rb", "abstract_component.rb", "missing.rb"]
+    files = [
+      "inline_component.rb",
+      "call_override_component.rb",
+      "call_override_child_component.rb",
+      "abstract_component.rb",
+      "missing.rb",
+    ]
 
     assert_empty(files.flat_map { |file| lenses(file) })
   end

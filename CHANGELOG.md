@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.3.0]
+
+- `Jump to template` opens the inherited templates of a component without its own: those of the nearest ancestor that has them, unless a class in between defines `call`.
+
 ## [0.2.1]
 
 - Drop the gemspec dependency on `ruby-lsp`. The add-on still declares `~> 0.26.0` with `depend_on_ruby_lsp!`, so a newer Ruby LSP no longer blocks `bundle update`: the add-on skips activation with a warning until it supports that version.
