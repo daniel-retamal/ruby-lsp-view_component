@@ -14,16 +14,16 @@ When the component has more than one template, the click opens a picker with the
 
 ![Pick a template](.github/assets/pick_template.gif)
 
-For `app/components/bar_component.rb`, the lens lists:
+For `app/components/foo_component.rb` with all of these templates, the lens lists:
 
 | File | What it is |
 |---|---|
-| `bar_component.html.erb` | [Main template](https://viewcomponent.org/guide/templates.html#sibling-file) |
-| `bar_component.html+phone.erb` | Variant of the main template |
-| `bar_component/bar_component.html.erb` | [Main template in a subdirectory](https://viewcomponent.org/guide/templates.html#subdirectory) |
-| `bar_component/list.html.erb` | Sub-template rendered with `call_list`, from [view_component_subtemplates](https://github.com/bukhr/view_component_subtemplates) |
+| `foo_component.html.erb` | [Main template](https://viewcomponent.org/guide/templates.html#sibling-file) |
+| `foo_component.html+phone.erb` | Variant of the main template |
+| `foo_component/foo_component.html.erb` | [Main template in a subdirectory](https://viewcomponent.org/guide/templates.html#subdirectory) |
+| `foo_component/list.html.erb` | Sub-template rendered with `call_list`, from [view_component_subtemplates](https://github.com/bukhr/view_component_subtemplates) |
 
-ERB, Haml and Slim templates are supported. Templates of nested components in the subdirectory, such as `bar_component/item_component.html.erb` next to `bar_component/item_component.rb`, belong to that component and are left out.
+ERB, Haml and Slim templates are supported. Templates of nested components in the subdirectory, such as `foo_component/item_component.html.erb` next to `foo_component/item_component.rb`, belong to that component and are left out.
 
 Components without a template file of their own get no lens. That covers [inline](https://viewcomponent.org/guide/templates.html#inline) and [`call`](https://viewcomponent.org/guide/templates.html#call) components, and components that [inherit](https://viewcomponent.org/guide/templates.html#inherited) their template from a parent class.
 
