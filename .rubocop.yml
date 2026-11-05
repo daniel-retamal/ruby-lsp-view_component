@@ -1,0 +1,20 @@
+plugins:
+  - rubocop-minitest
+  - rubocop-rake
+
+inherit_gem:
+  rubocop-shopify: rubocop.yml
+
+AllCops:
+  TargetRubyVersion: 3.1
+  NewCops: enable
+  Exclude:
+    - "tmp/**/*"
+    - "vendor/**/*"
+    - "test/fixtures/**/*"
+
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
+
+Layout/LineLength:
+  Max: 120
