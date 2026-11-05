@@ -6,6 +6,7 @@ gemspec
 
 gem "minitest", "~> 5.0"
 gem "rake", "~> 13.0"
+gem "ruby-lsp", "~> 0.26.0"
 gem "rubocop-minitest", require: false
 gem "rubocop-rake", require: false
 gem "rubocop-shopify", "~> 3.1", require: false

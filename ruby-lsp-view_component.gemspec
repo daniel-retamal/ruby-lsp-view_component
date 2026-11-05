@@ -20,6 +20,4 @@ Gem::Specification.new do |spec|
 
   spec.files = Dir["lib/**/*.rb", "LICENSE.txt", "README.md", "CHANGELOG.md"]
   spec.require_paths = ["lib"]
-
-  spec.add_dependency("ruby-lsp", "~> 0.26.0")
 end
